@@ -63,7 +63,7 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
   posEstimator.surface.altRawLast = altRawLast;
   posEstimator.surface.altRaw = altRawCurrent;
 
-  if (altDifference > 30.0f || altDifference < -30.0f) {
+  if (altDifference > 5.0f || altDifference < -5.0f) {
     posEstimator.surface.altOffset += altDifference;
   }
 
