@@ -2539,6 +2539,18 @@ groups:
         default_value: "GPS"
         field: default_alt_sensor
         table: default_altitude_source
+      - name: obstacle_detection_step_height
+        description: "Minimum altitude change [cm] from the rangefinder to be considered an obstacle step. Altitude differences below this threshold are ignored."
+        default_value: 5
+        field: obstacle_detection_step_height
+        min: 0
+        max: 1000
+      - name: obstacle_detection_rtz_rate
+        description: "Rate [cm/s] at which the surface altitude offset returns to zero after an obstacle step is detected."
+        default_value: 1
+        field: obstacle_detection_rtz_rate
+        min: 0
+        max: 1000
 
   - name: PG_NAV_CONFIG
     type: navConfig_t

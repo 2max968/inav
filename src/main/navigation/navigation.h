@@ -394,6 +394,12 @@ typedef struct positionEstimationConfig_s {
   float baro_epv;    // Baro position error
 
   uint8_t default_alt_sensor; // default altitude sensor source
+
+  float obstacle_detection_step_height; // Minimum altitude change to be
+                                        // considered an obstacle step [cm]
+  float obstacle_detection_rtz_rate; // Rate at which altOffset returns to zero
+                                     // [cm/s]
+
 #ifdef USE_GPS_FIX_ESTIMATION
   uint8_t allow_gps_fix_estimation;
 #endif
@@ -724,9 +730,9 @@ typedef enum {
   MW_NAV_ERROR_WP_CRC,   // CRC error reading WP data from EEPROM - Nav stopped
   MW_NAV_ERROR_FINISH,   // End flag detected, navigation finished
   MW_NAV_ERROR_TIMEWAIT, // Waiting for poshold timer
-  MW_NAV_ERROR_INVALID_JUMP, // Invalid jump target detected, aborting
-  MW_NAV_ERROR_INVALID_DATA, // Invalid mission step action code, aborting,
-                             // copter is adrift
+  MW_NAV_ERROR_INVALID_JUMP,     // Invalid jump target detected, aborting
+  MW_NAV_ERROR_INVALID_DATA,     // Invalid mission step action code, aborting,
+                                 // copter is adrift
   MW_NAV_ERROR_WAIT_FOR_RTH_ALT, // Waiting to reach RTH Altitude
   MW_NAV_ERROR_GPS_FIX_LOST,     // Gps fix lost, aborting mission
   MW_NAV_ERROR_DISARMED,         // NAV engine disabled due disarm

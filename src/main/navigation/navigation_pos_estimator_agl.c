@@ -67,8 +67,25 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
     const float altDifference = altCurrent - altLast;
     // Threshold lowered to 15cm to catch smaller/split jumps (7.5m/s vertical
     // ground speed equivalent)
-    if (altDifference > 5.0f || altDifference < -5.0f) {
+    if (altDifference >
+            positionEstimationConfig()->obstacle_detection_step_height ||
+        altDifference <
+            -positionEstimationConfig()->obstacle_detection_step_height) {
       posEstimator.surface.altOffset += altDifference;
+    }
+  }
+
+  // Gradually return altOffset to zero at obstacle_detection_rtz_rate cm/s
+  if (posEstimator.surface.altOffset != 0 && ARMING_FLAG(ARMED)) {
+    const float surfaceDt = US2S(surfaceDtUs);
+    const float decay =
+        positionEstimationConfig()->obstacle_detection_rtz_rate * surfaceDt;
+    if (posEstimator.surface.altOffset > 0) {
+      posEstimator.surface.altOffset =
+          MAX(0.0f, posEstimator.surface.altOffset - decay);
+    } else {
+      posEstimator.surface.altOffset =
+          MIN(0.0f, posEstimator.surface.altOffset + decay);
     }
   }
 

@@ -59,7 +59,7 @@ static float initialBaroAltitudeOffset = 0.0f;
 
 PG_REGISTER_WITH_RESET_TEMPLATE(positionEstimationConfig_t,
                                 positionEstimationConfig,
-                                PG_POSITION_ESTIMATION_CONFIG, 8);
+                                PG_POSITION_ESTIMATION_CONFIG, 9);
 
 PG_RESET_TEMPLATE(
     positionEstimationConfig_t, positionEstimationConfig,
@@ -99,6 +99,11 @@ PG_RESET_TEMPLATE(
     .baro_epv = SETTING_INAV_BARO_EPV_DEFAULT,
 
     .default_alt_sensor = SETTING_INAV_DEFAULT_ALT_SENSOR_DEFAULT,
+
+    .obstacle_detection_step_height =
+        SETTING_OBSTACLE_DETECTION_STEP_HEIGHT_DEFAULT,
+    .obstacle_detection_rtz_rate = SETTING_OBSTACLE_DETECTION_RTZ_RATE_DEFAULT,
+
 #ifdef USE_GPS_FIX_ESTIMATION
     .allow_gps_fix_estimation = SETTING_INAV_ALLOW_GPS_FIX_ESTIMATION_DEFAULT
 #endif
