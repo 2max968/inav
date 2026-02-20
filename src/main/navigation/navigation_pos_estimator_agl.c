@@ -39,6 +39,8 @@
 #include "sensors/barometer.h"
 #include "sensors/rangefinder.h"
 
+#include "programming/global_variables.h"
+
 extern navigationPosEstimator_t posEstimator;
 
 #ifdef USE_RANGEFINDER
@@ -56,20 +58,31 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
   posEstimator.surface.lastUpdateTime = currentTimeUs;
 
   // Use local variables to ensure atomic calculation and explicit types
-  const float altRawCurrent = (float)rangefinderGetLatestRawAltitude();
-  const float altRawLast = posEstimator.surface.altRaw;
-  const float altDifference = altRawCurrent - altRawLast;
+  // Use tilt-compensated altitude for better consistency
+  const float altCurrent = (float)rangefinderGetLatestAltitude();
+  const float altLast =
+      posEstimator.surface.altRaw; // Using altRaw storage for history
 
-  posEstimator.surface.altRawLast = altRawLast;
-  posEstimator.surface.altRaw = altRawCurrent;
-
-  if (altDifference > 5.0f || altDifference < -5.0f) {
-    posEstimator.surface.altOffset += altDifference;
+  if (altCurrent > 0 && altLast > 0) {
+    const float altDifference = altCurrent - altLast;
+    // Threshold lowered to 15cm to catch smaller/split jumps (7.5m/s vertical
+    // ground speed equivalent)
+    if (altDifference > 5.0f || altDifference < -5.0f) {
+      posEstimator.surface.altOffset += altDifference;
+    }
   }
 
-  DEBUG_SET(DEBUG_AGL, 4, (int32_t)altRawCurrent);
-  DEBUG_SET(DEBUG_AGL, 5, (int32_t)altRawLast);
+  if (!ARMING_FLAG(ARMED)) {
+    posEstimator.surface.altOffset = 0;
+  }
+
+  posEstimator.surface.altRawLast = altLast;
+  posEstimator.surface.altRaw = altCurrent;
+
+  DEBUG_SET(DEBUG_AGL, 4, (int32_t)altCurrent);
+  DEBUG_SET(DEBUG_AGL, 5, (int32_t)altLast);
   DEBUG_SET(DEBUG_AGL, 6, (int32_t)posEstimator.surface.altOffset);
+  gvSet(0, (int32_t)posEstimator.surface.altOffset);
 
   if (newSurfaceAlt >= 0) {
     if (newSurfaceAlt <= positionEstimationConfig()->max_surface_altitude) {
