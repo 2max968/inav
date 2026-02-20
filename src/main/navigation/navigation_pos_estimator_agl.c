@@ -138,6 +138,14 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
 void estimationCalculateAGL(estimationContext_t *ctx) {
 #if defined(USE_RANGEFINDER) && defined(USE_BARO)
   if ((ctx->newFlags & EST_SURFACE_VALID) && (ctx->newFlags & EST_BARO_VALID)) {
+    // Apply altOffset to surface measurements so the AGL estimator ignores
+    // obstacle-induced step changes in rangefinder readings
+    const float adjustedSurfaceAlt =
+        posEstimator.surface.alt - posEstimator.surface.altOffset;
+    const float adjustedAvgSurfaceAlt =
+        pt1FilterGetLastOutput(&posEstimator.surface.avgFilter) -
+        posEstimator.surface.altOffset;
+
     navAGLEstimateQuality_e newAglQuality = posEstimator.est.aglQual;
     bool resetSurfaceEstimate = false;
     switch (posEstimator.est.aglQual) {
@@ -182,13 +190,12 @@ void estimationCalculateAGL(estimationContext_t *ctx) {
     posEstimator.est.aglQual = newAglQuality;
 
     if (resetSurfaceEstimate) {
-      posEstimator.est.aglAlt =
-          pt1FilterGetLastOutput(&posEstimator.surface.avgFilter);
+      posEstimator.est.aglAlt = adjustedAvgSurfaceAlt;
       // If we have acceptable average estimate
       if (posEstimator.est.epv < positionEstimationConfig()->max_eph_epv) {
         posEstimator.est.aglVel = posEstimator.est.vel.z;
         posEstimator.est.aglOffset =
-            posEstimator.est.pos.z - posEstimator.surface.alt;
+            posEstimator.est.pos.z - adjustedSurfaceAlt;
       } else {
         posEstimator.est.aglVel = 0;
         posEstimator.est.aglOffset = 0;
@@ -206,7 +213,7 @@ void estimationCalculateAGL(estimationContext_t *ctx) {
     if (posEstimator.est.aglQual == SURFACE_QUAL_HIGH) {
       // Correct estimate from rangefinder
       const float surfaceResidual =
-          posEstimator.surface.alt - posEstimator.est.aglAlt;
+          adjustedSurfaceAlt - posEstimator.est.aglAlt;
       const float bellCurveScaler = scaleRangef(
           bellCurve(surfaceResidual, 75.0f), 0.0f, 1.0f, 0.1f, 1.0f);
 
@@ -221,8 +228,7 @@ void estimationCalculateAGL(estimationContext_t *ctx) {
       if ((posEstimator.est.aglQual == SURFACE_QUAL_HIGH) &&
           (posEstimator.est.epv < positionEstimationConfig()->max_eph_epv)) {
         posEstimator.est.aglOffset =
-            posEstimator.est.pos.z -
-            pt1FilterGetLastOutput(&posEstimator.surface.avgFilter);
+            posEstimator.est.pos.z - adjustedAvgSurfaceAlt;
       }
     } else if (posEstimator.est.aglQual == SURFACE_QUAL_MID) {
       // Correct estimate from altitude fused from rangefinder and global
@@ -231,7 +237,7 @@ void estimationCalculateAGL(estimationContext_t *ctx) {
           (posEstimator.est.pos.z - posEstimator.est.aglOffset) -
           posEstimator.est.aglAlt;
       const float surfaceResidual =
-          posEstimator.surface.alt - posEstimator.est.aglAlt;
+          adjustedSurfaceAlt - posEstimator.est.aglAlt;
       const float surfaceWeightScaler =
           scaleRangef(bellCurve(surfaceResidual, 50.0f), 0.0f, 1.0f, 0.1f,
                       1.0f) *

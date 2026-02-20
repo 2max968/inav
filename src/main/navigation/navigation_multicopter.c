@@ -73,9 +73,8 @@ float getSqrtControllerVelocity(float targetAltitude, timeDelta_t deltaMicros) {
 
 // Position to velocity controller for Z axis
 static void updateAltitudeVelocityController_MC(timeDelta_t deltaMicros) {
-  float targetVel = getDesiredClimbRate(posControl.desiredState.pos.z +
-                                            posEstimator.surface.altOffset,
-                                        deltaMicros);
+  float targetVel =
+      getDesiredClimbRate(posControl.desiredState.pos.z, deltaMicros);
 
   posControl.pids.pos[Z].output_constrained =
       targetVel; // only used for Blackbox and OSD info
