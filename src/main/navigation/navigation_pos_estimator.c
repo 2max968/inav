@@ -103,6 +103,7 @@ PG_RESET_TEMPLATE(
     .obstacle_detection_step_height =
         SETTING_OBSTACLE_DETECTION_STEP_HEIGHT_DEFAULT,
     .obstacle_detection_rtz_rate = SETTING_OBSTACLE_DETECTION_RTZ_RATE_DEFAULT,
+    .obstacle_detection_max = SETTING_OBSTACLE_DETECTION_MAX_DEFAULT,
 
 #ifdef USE_GPS_FIX_ESTIMATION
     .allow_gps_fix_estimation = SETTING_INAV_ALLOW_GPS_FIX_ESTIMATION_DEFAULT

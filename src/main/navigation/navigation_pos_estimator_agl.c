@@ -63,16 +63,28 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
   const float altLast =
       posEstimator.surface.altRaw; // Using altRaw storage for history
 
-  if (altCurrent > 0 && altLast > 0) {
-    const float altDifference = altCurrent - altLast;
-    // Threshold lowered to 15cm to catch smaller/split jumps (7.5m/s vertical
-    // ground speed equivalent)
-    if (altDifference >
-            positionEstimationConfig()->obstacle_detection_step_height ||
-        altDifference <
-            -positionEstimationConfig()->obstacle_detection_step_height) {
-      posEstimator.surface.altOffset += altDifference;
+  if(positionEstimationConfig()->obstacle_detection_step_height != 0)
+  {
+    if (altCurrent > 0 && altLast > 0) {
+        const float altDifference = altCurrent - altLast;
+        // Threshold lowered to 15cm to catch smaller/split jumps (7.5m/s vertical
+        // ground speed equivalent)
+        if (altDifference >
+                positionEstimationConfig()->obstacle_detection_step_height ||
+            altDifference <
+                -positionEstimationConfig()->obstacle_detection_step_height) {
+        posEstimator.surface.altOffset += altDifference;
+        }
     }
+}
+
+  if(posEstimator.surface.altOffset > positionEstimationConfig()->obstacle_detection_max)
+  {
+    posEstimator.surface.altOffset = positionEstimationConfig()->obstacle_detection_max;
+  }
+  if(posEstimator.surface.altOffset < -positionEstimationConfig()->obstacle_detection_max)
+  {
+    posEstimator.surface.altOffset = -positionEstimationConfig()->obstacle_detection_max;
   }
 
   // Gradually return altOffset to zero at obstacle_detection_rtz_rate cm/s
@@ -89,6 +101,7 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
     }
   }
 
+  // Reset value when drone is disarmed
   if (!ARMING_FLAG(ARMED)) {
     posEstimator.surface.altOffset = 0;
   }
@@ -96,9 +109,6 @@ void updatePositionEstimator_SurfaceTopic(timeUs_t currentTimeUs,
   posEstimator.surface.altRawLast = altLast;
   posEstimator.surface.altRaw = altCurrent;
 
-  DEBUG_SET(DEBUG_AGL, 4, (int32_t)altCurrent);
-  DEBUG_SET(DEBUG_AGL, 5, (int32_t)altLast);
-  DEBUG_SET(DEBUG_AGL, 6, (int32_t)posEstimator.surface.altOffset);
   gvSet(0, (int32_t)posEstimator.surface.altOffset);
 
   if (newSurfaceAlt >= 0) {
@@ -266,9 +276,6 @@ void estimationCalculateAGL(estimationContext_t *ctx) {
   DEBUG_SET(DEBUG_AGL, 1, posEstimator.est.aglQual);
   DEBUG_SET(DEBUG_AGL, 2, posEstimator.est.aglAlt);
   DEBUG_SET(DEBUG_AGL, 3, posEstimator.est.aglVel);
-  DEBUG_SET(DEBUG_AGL, 4, posEstimator.surface.altRaw);
-  DEBUG_SET(DEBUG_AGL, 5, posEstimator.surface.altRawLast);
-  DEBUG_SET(DEBUG_AGL, 6, posEstimator.surface.altOffset);
 
 #else
   UNUSED(ctx);

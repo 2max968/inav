@@ -399,6 +399,8 @@ typedef struct positionEstimationConfig_s {
                                         // considered an obstacle step [cm]
   float obstacle_detection_rtz_rate; // Rate at which altOffset returns to zero
                                      // [cm/s]
+  float obstacle_detection_max; // Maximum allowed accumulated altitude offset
+                                // [cm]
 
 #ifdef USE_GPS_FIX_ESTIMATION
   uint8_t allow_gps_fix_estimation;

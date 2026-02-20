@@ -2551,6 +2551,12 @@ groups:
         field: obstacle_detection_rtz_rate
         min: 0
         max: 1000
+      - name: obstacle_detection_max
+        description: "Maximum allowed accumulated altitude offset [cm] from obstacle detection. The offset will be clamped to this value. Set to 0 to disable clamping."
+        default_value: 200
+        field: obstacle_detection_max
+        min: 0
+        max: 1000
 
   - name: PG_NAV_CONFIG
     type: navConfig_t
